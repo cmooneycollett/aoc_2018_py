@@ -2,6 +2,8 @@
 Solutions for AOC 2018 Day 1 - "Chronal Calibration".
 """
 
+import itertools
+
 
 def process_input_file(filepath="./input/day01.txt"):
     """
@@ -21,8 +23,17 @@ def solve_part1(frequency_deltas):
     return sum(frequency_deltas)
 
 
-def solve_part2(_frequency_deltas):
+def solve_part2(frequency_deltas):
     """
-    Solves AOC 2018 Day 1 Part 2 // ###
+    Solves AOC 2018 Day 1 Part 2 // Returns the first frequency that is reached
+    twice, from a starting frequency of 0 and using the given frequency deltas.
     """
-    return NotImplemented
+    frequency = 0
+    seen = set([frequency])
+    for delta in itertools.cycle(frequency_deltas):
+        frequency += delta
+        if frequency in seen:
+            return frequency
+        seen.add(frequency)
+    raise RuntimeError("AOC 2018 D1-P2: did not observe a single frequency "
+                       "value twice")
