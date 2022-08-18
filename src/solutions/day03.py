@@ -45,8 +45,25 @@ def solve_part1(claims):
     return len(overlaps)
 
 
-def solve_part2(_claims):
+def solve_part2(claims):
     """
-    Solves AOC 2018 Day 3 Part 2 // ###
+    Solves AOC 2018 Day 3 Part 2 // Determines the ID of the only claim that
+    does not overlap.
     """
-    return NotImplemented
+    # Record which claim IDs occur for each claimed location
+    seen = {}
+    for (claim_id, (loc, width, height)) in claims.items():
+        for delta_y in range(height):
+            for delta_x in range(width):
+                new_loc = Location2D(loc.x + delta_x, loc.y + delta_y)
+                if new_loc not in seen:
+                    seen[new_loc] = [claim_id]
+                else:
+                    seen[new_loc].append(claim_id)
+    # Find the IDs of the claims that overlap with another claim
+    overlapping_claims = set()
+    for claim_ids in (claim_ids for claim_ids in seen.values()
+                      if len(claim_ids) > 1):
+        overlapping_claims.update(claim_ids)
+    # Find the ID of the one claim that does not overlap with another claim
+    return (claims.keys() - overlapping_claims).pop()
