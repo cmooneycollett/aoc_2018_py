@@ -32,8 +32,19 @@ def solve_part1(box_codes):
     return count_two * count_three
 
 
-def solve_part2(_box_codes):
+def solve_part2(box_codes):
     """
-    Solves AOC 2018 Day 2 Part 2 // ###
+    Solves AOC 2018 Day 2 Part 2 // Determines the letters that are common
+    between the two box codes that differ by only a single letter.
     """
-    return NotImplemented
+    for (index_i, code) in enumerate(box_codes):
+        for index_j in range(index_i + 1, len(box_codes)):
+            mismatch_letters = ""
+            for (index_char, char) in enumerate(code):
+                if char != box_codes[index_j][index_char]:
+                    mismatch_letters += char
+                    if len(mismatch_letters) > 1:
+                        break
+            if len(mismatch_letters) == 1:
+                return code.replace(mismatch_letters, "")
+    raise RuntimeError("AOC 2018 D2-P2: did not find the two correct box IDs!")
