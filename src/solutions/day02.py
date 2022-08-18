@@ -37,11 +37,11 @@ def solve_part2(box_codes):
     Solves AOC 2018 Day 2 Part 2 // Determines the letters that are common
     between the two box codes that differ by only a single letter.
     """
-    for (index_i, code) in enumerate(box_codes):
-        for index_j in range(index_i + 1, len(box_codes)):
+    for (i, code) in enumerate(box_codes):
+        for j in range(i + 1, len(box_codes)):
             mismatch_letters = ""
-            for (index_char, char) in enumerate(code):
-                if char != box_codes[index_j][index_char]:
+            for (k, char) in enumerate(code):
+                if char != box_codes[j][k]:
                     mismatch_letters += char
                     if len(mismatch_letters) > 1:
                         break
