@@ -4,7 +4,7 @@ against the actual problem input files. This test module is configured to use
 the pytest library.
 """
 
-from src.solutions import day01, day02, day03
+from src.solutions import day01, day02, day03, day04
 
 
 def test_day01_part1():
@@ -59,3 +59,21 @@ def test_day03_part2():
     input_data = day03.process_input_file()
     solution = day03.solve_part2(input_data)
     assert solution == 943
+
+
+def test_day04_part1():
+    """
+    Solution test method for AOC 2018 Day 4 Part 1.
+    """
+    input_data = day04.process_input_file()
+    solution = day04.solve_part1(input_data)
+    assert solution == 94040
+
+
+def test_day04_part2():
+    """
+    Solution test method for AOC 2018 Day 4 Part 2.
+    """
+    input_data = day04.process_input_file()
+    solution = day04.solve_part2(input_data)
+    assert solution == 39940
