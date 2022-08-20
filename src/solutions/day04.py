@@ -8,8 +8,8 @@ import re
 def process_input_file(filepath="./input/day04.txt"):
     """
     Processes the AOC 2018 Day 4 input file into the format required by the
-    solver functions. Returns list of guard shifts including the periods during
-    which the on-watch guard was asleep.
+    solver functions. Returns dict recording the amount of time spent asleep
+    during each minute of the midnight hour for each guard.
     """
     with open(filepath, encoding="utf-8") as file:
         sleep_recs = []
@@ -45,23 +45,15 @@ def process_input_file(filepath="./input/day04.txt"):
                         sleep_periods.append((left, right))
                     cursor += 1
                 guard_shifts.append((guard_id, sleep_periods))
-        return guard_shifts
+        return generate_guard_sleep_counts(guard_shifts)
 
 
-def solve_part1(guard_shifts):
+def solve_part1(guard_sleep_counts):
     """
     Solves AOC 2018 Day 4 Part 1 // Finds the guard that spends the most minutes
     asleep, returning the ID of that guard multiplied by the minute that they
     spend the most time asleep.
     """
-    # Add up the time each guard spends asleep in the minutes of midnight hour
-    guard_sleep_counts = {}
-    for (guard_id, sleep_periods) in guard_shifts:
-        if guard_id not in guard_sleep_counts:
-            guard_sleep_counts[guard_id] = {i: 0 for i in range(60)}
-        for (left, right) in sleep_periods:
-            for minute in range(left, right + 1):
-                guard_sleep_counts[guard_id][minute] += 1
     # Find the guard that spends the most minutes asleep
     most_minutes_asleep = -1
     guard_id_sleepy = -1
@@ -76,8 +68,36 @@ def solve_part1(guard_shifts):
     return guard_id_sleepy * sleepiest_minute
 
 
-def solve_part2(_guard_shifts):
+def solve_part2(guard_sleep_counts):
     """
-    Solves AOC 2018 Day 4 Part 2 // ###
+    Solves AOC 2018 Day 4 Part 2 // Finds the guard most frequently asleep on
+    the same minute, returning the ID of that guard multiplied by the chosen
+    minute.
     """
-    return NotImplemented
+    # Find the guard that is most frequently asleep on the same minute
+    most_time_asleep = -1
+    guard_id_sleepy = -1
+    chosen_minute = -1
+    for (guard_id, minute_sleep_counts) in guard_sleep_counts.items():
+        for (minute, sleep_count) in minute_sleep_counts.items():
+            if sleep_count > most_time_asleep:
+                most_time_asleep = sleep_count
+                guard_id_sleepy = guard_id
+                chosen_minute = minute
+    return guard_id_sleepy * chosen_minute
+
+
+def generate_guard_sleep_counts(guard_shifts):
+    """
+    Generates the guard sleep counts (the total amount of time spent asleep in
+    each minute of the midnight hour by each guard) by processing the guard
+    shifts.
+    """
+    guard_sleep_counts = {}
+    for (guard_id, sleep_periods) in guard_shifts:
+        if guard_id not in guard_sleep_counts:
+            guard_sleep_counts[guard_id] = {i: 0 for i in range(60)}
+        for (left, right) in sleep_periods:
+            for minute in range(left, right + 1):
+                guard_sleep_counts[guard_id][minute] += 1
+    return guard_sleep_counts
