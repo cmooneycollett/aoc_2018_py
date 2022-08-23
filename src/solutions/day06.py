@@ -80,7 +80,7 @@ def solve_part2(points: List[Location2D]):
     than 10000.
     """
     cap = 10000
-    buffer = cap // 2 + 1
+    buffer = cap // (2 * len(points)) + 1
     minmax = calculate_minmax(points)
     safe_points = 0
     for y in range(minmax.y_min - buffer, minmax.y_max + buffer + 1):
