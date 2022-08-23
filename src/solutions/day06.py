@@ -2,8 +2,21 @@
 Solutions for AOC 2018 Day 6 - "Chronal Coordinates".
 """
 
+from dataclasses import dataclass
 from typing import List
 from src.utils.cartography import Location2D
+
+
+@dataclass
+class MinMax:
+    """
+    Stores the minimum and maximum x- and y-coordinate values for a collection
+    of 2D locations.
+    """
+    x_min: int
+    x_max: int
+    y_min: int
+    y_max: int
 
 
 def process_input_file(filepath="./input/day06.txt"):
@@ -28,20 +41,18 @@ def solve_part1(points: List[Location2D]):
     single point that is not infinite.
     """
     # Calculate minimum and maximum x- and y-coordinates
-    x_min = min(point.x for point in points)
-    x_max = max(point.x for point in points)
-    y_min = min(point.y for point in points)
-    y_max = max(point.y for point in points)
+    minmax = calculate_minmax(points)
     # Check each point
     region_map = {}
     boundary_points = set()
     area_counts = {point_id: 0 for point_id in range(len(points))}
-    for y in range(y_min, y_max + 1):
-        for x in range(x_min, x_max + 1):
+    for y in range(minmax.y_min, minmax.y_max + 1):
+        for x in range(minmax.x_min, minmax.x_max + 1):
             min_dist = None
             closest_point_ids = []
             loc = Location2D(x, y)
-            if x == x_min or x == x_max or y == y_min or y == y_max:
+            if x == minmax.x_min or x == minmax.x_max or y == minmax.y_min or \
+                    y == minmax.y_max:
                 boundary_points.add(loc)
             for (point_id, point) in enumerate(points):
                 dist = abs(x - point.x) + abs(y - point.y)
@@ -62,11 +73,24 @@ def solve_part1(points: List[Location2D]):
     return max(area_counts.values())
 
 
-def solve_part2(_points: List[Location2D]):
+def solve_part2(points: List[Location2D]):
     """
-    Solves AOC 2018 Day 6 Part 2 // ###
+    Solves AOC 2018 Day 6 Part 2 // Calculates the size of the region containing
+    all locations which have a total distance to all other locations of less
+    than 10000.
     """
-    return NotImplemented
+    cap = 10000
+    buffer = cap // 2 + 1
+    minmax = calculate_minmax(points)
+    safe_points = 0
+    for y in range(minmax.y_min - buffer, minmax.y_max + buffer + 1):
+        for x in range(minmax.x_min - buffer, minmax.x_max + buffer + 1):
+            total_manhattan_dist = 0
+            for point in points:
+                total_manhattan_dist += abs(x - point.x) + abs(y - point.y)
+            if total_manhattan_dist < cap:
+                safe_points += 1
+    return safe_points
 
 
 def get_valid_next_states(point_id, loc, seen, minmax):
@@ -82,3 +106,15 @@ def get_valid_next_states(point_id, loc, seen, minmax):
         if new_loc in seen and point_id in seen[new_loc]:
             continue
         yield (point_id, new_loc, loc)
+
+
+def calculate_minmax(points):
+    """
+    Calculates the minimum and maximum x- and y-coordinates for the given 2D
+    points. Returns a MinMax object with the resulting values.
+    """
+    x_min = min(point.x for point in points)
+    x_max = max(point.x for point in points)
+    y_min = min(point.y for point in points)
+    y_max = max(point.y for point in points)
+    return MinMax(x_min, x_max, y_min, y_max)
