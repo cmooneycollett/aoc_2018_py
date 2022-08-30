@@ -22,11 +22,15 @@ def solve_part1(licence_values):
     return metadata_sum
 
 
-def solve_part2(_licence_values):
+def solve_part2(licence_values):
     """
-    Solves AOC 2018 Day 8 Part 2 // ###
+    Solves AOC 2018 Day 8 Part 2 // Determines the value of the root node by
+    using the second check method. The second method uses node value calculation
+    that depends on whether the node has child nodes.
     """
-    return NotImplemented
+    (metadata_sum, _) = calculate_metadata_sum(licence_values, 0,
+                                               metadata_index=True)
+    return metadata_sum
 
 
 def calculate_metadata_sum(licence_values, start, metadata_index=False):
@@ -41,15 +45,16 @@ def calculate_metadata_sum(licence_values, start, metadata_index=False):
     child_metadata_values = []
     # Add up metadata values from child nodes
     for _ in range(num_child):
-        (metadata_delta, cursor) = calculate_metadata_sum(licence_values, cursor)
-        child_metadata_values.append(metadata_delta)
+        (child_sum, cursor) = calculate_metadata_sum(licence_values, cursor,
+                                                     metadata_index)
+        child_metadata_values.append(child_sum)
         cursor += 1
     # Metadata values from current node
     for i in range(num_metadata):
-        if metadata_index:
-            if licence_values[cursor + i] > len(child_metadata_values):
-                continue
+        if metadata_index and num_child > 0:
             child_index = licence_values[cursor + i] - 1
+            if child_index < 0 or child_index >= len(child_metadata_values):
+                continue
             metadata_sum += child_metadata_values[child_index]
         else:
             metadata_sum += licence_values[cursor + i]
