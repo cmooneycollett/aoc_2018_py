@@ -24,19 +24,22 @@ def process_input_file(filepath="./input/day09.txt"):
 
 def solve_part1(input_data):
     """
-    Solves AOC 2018 Day 9 Part 1 // Determines the winning score for the elf
-    in the marble game, using the number of players and last marble score given
-    in the input data.
+    Solves AOC 2018 Day 9 Part 1 // Determines the winning score for the elf in
+    the marble game, using the number of players and last marble score given in
+    the input data.
     """
     (num_players, num_points_last_marble) = input_data
     return play_marble_game(num_players, num_points_last_marble)
 
 
-def solve_part2(_input_data):
+def solve_part2(input_data):
     """
-    Solves AOC 2018 Day 9 Part 2 // ###
+    Solves AOC 2018 Day 9 Part 2 // Determines the winning score for the elf in
+    the marble game, using the number of players and 100 times the last marble
+    score given in the input data
     """
-    return NotImplemented
+    (num_players, num_points_last_marble) = input_data
+    return play_marble_game(num_players, num_points_last_marble * 100)
 
 
 def play_marble_game(num_players, num_points_last_marble):
