@@ -57,11 +57,13 @@ def solve_part1(input_points):
     return message
 
 
-def solve_part2(_input_points):
+def solve_part2(input_points):
     """
-    Solves AOC 2018 Day ## Part 2 // ###
+    Solves AOC 2018 Day 10 Part 2 // Determines the number of steps taken until
+    the input light points display their message.
     """
-    return NotImplemented
+    (_, steps) = simulate_points(input_points)
+    return steps
 
 
 def simulate_points(input_points):
