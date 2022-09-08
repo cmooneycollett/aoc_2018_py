@@ -5,7 +5,7 @@ the pytest library.
 """
 
 from src.solutions import day01, day02, day03, day04, day05, day06, day07, \
-    day08, day09, day10
+    day08, day09, day10, day11
 
 
 def test_day01_part1():
@@ -186,3 +186,21 @@ def test_day10_part2():
     input_data = day10.process_input_file()
     solution = day10.solve_part2(input_data)
     assert solution == 10656
+
+
+def test_day11_part1():
+    """
+    Solution test method for AOC 2018 Day 11 Part 1.
+    """
+    input_data = day11.process_input_file()
+    solution = day11.solve_part1(input_data)
+    assert solution == "21,34"
+
+
+def test_day11_part2():
+    """
+    Solution test method for AOC 2018 Day 11 Part 2.
+    """
+    input_data = day11.process_input_file()
+    solution = day11.solve_part2(input_data)
+    assert solution == "90,244,16"
