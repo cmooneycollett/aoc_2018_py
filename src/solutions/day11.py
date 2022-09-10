@@ -21,15 +21,31 @@ def solve_part1(serial_num):
     top-left fuel cell of the 3x3 square with the largest total power.
     """
     fuel_grid = generate_fuel_grid(serial_num)
-    (x, y) = find_square_with_largest_power(fuel_grid, 3)
-    return f"{x},{y}"
+    (result_x, result_y, _) = find_square_with_largest_power(fuel_grid, 3)
+    return f"{result_x},{result_y}"
 
 
-def solve_part2(_serial_num):
+def solve_part2(serial_num):
     """
-    Solves AOC 2018 Day 11 Part 2 // ###
+    Solves AOC 2018 Day 11 Part 2 //  Determines the X,Y co-ordinate of the
+    top-left fuel cell of the square with the largest total power (size of the
+    square is between 1x1 and 300x300).
     """
-    return NotImplemented
+    result_x = -1
+    result_y = -1
+    result_side_len = -1
+    max_power = None
+    fuel_grid = generate_fuel_grid(serial_num)
+    for side_len in range(1, 301):
+        (x, y, power) = find_square_with_largest_power(fuel_grid, side_len)
+        if power < 0:
+            break
+        if max_power is None or power > max_power:
+            max_power = power
+            result_x = x
+            result_y = y
+            result_side_len = side_len
+    return f"{result_x},{result_y},{result_side_len}"
 
 
 def generate_fuel_grid(serial_num):
@@ -44,9 +60,7 @@ def generate_fuel_grid(serial_num):
             power_level = rack_id * y
             power_level += serial_num
             power_level *= rack_id
-            power_level = int(
-                str(power_level)[-3]) if power_level >= 100 else 0
-            power_level -= 5
+            power_level = (power_level % 1000) // 100 - 5
             row.append(power_level)
         fuel_grid.append(row)
     return fuel_grid
@@ -56,7 +70,8 @@ def find_square_with_largest_power(fuel_grid, side_len):
     """
     Finds the square (with specified side length) in the fuel grid (300x300)
     with the largest power level. Returns the tuple with the X- and
-    Y-coordinates of the top-left cell for the resulting square.
+    Y-coordinates of the top-left cell for the resulting square, and the maximum
+    power.
     """
     cells = list(itertools.product(range(300), repeat=2))
     valid_cells = [cell for cell in cells if cell[0] + side_len <= 300 and
@@ -73,4 +88,4 @@ def find_square_with_largest_power(fuel_grid, side_len):
             max_power = power_total
             result_x = x + 1
             result_y = y + 1
-    return (result_x, result_y)
+    return (result_x, result_y, max_power)
