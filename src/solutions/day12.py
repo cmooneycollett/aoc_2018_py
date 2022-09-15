@@ -4,6 +4,7 @@ Solutions for AOC 2018 Day 12.
 
 from copy import deepcopy
 import re
+from collections import deque
 
 
 class PlantSim:
@@ -27,6 +28,8 @@ class PlantSim:
         self.recipes = {}
         for (from_note, to_note) in recipes_raw:
             self.recipes[from_note] = to_note
+        # Initialise steps
+        self.steps = 0
 
     def conduct_step(self):
         """
@@ -52,6 +55,7 @@ class PlantSim:
         # Record the expansion of plant pots
         self.leftmost_pot_index -= 2
         self.rightmost_pot_index += 2
+        self.steps += 1
 
     def calculate_plant_pot_sum(self):
         """
@@ -59,6 +63,12 @@ class PlantSim:
         them.
         """
         return sum(pot for (pot, plant) in self.state.items() if plant == "#")
+
+    def get_steps(self):
+        """
+        Gets the total number of steps conducted by the PlantSim.
+        """
+        return self.steps
 
 
 def process_input_file(filepath="./input/day12.txt"):
@@ -76,7 +86,7 @@ def process_input_file(filepath="./input/day12.txt"):
         return PlantSim(match_state[0], match_recipes)
 
 
-def solve_part1(input_plant_sim):
+def solve_part1(input_plant_sim: PlantSim) -> int:
     """
     Solves AOC 2018 Day 12 Part 1 // Determines the plant pot index sum for all
     pots containing plants after 20 generations.
@@ -87,8 +97,26 @@ def solve_part1(input_plant_sim):
     return plant_sim.calculate_plant_pot_sum()
 
 
-def solve_part2(_input_data):
+def solve_part2(input_plant_sim: PlantSim) -> int:
     """
-    Solves AOC 2018 Day ## Part 2 // ###
+    Solves AOC 2018 Day 12 Part 2 // Determines the plant pot index sum for all
+    pots containing plants after 50 billion generations.
     """
-    return NotImplemented
+    step_cap = 50000000000  # 50 billion generations
+    plant_sim = deepcopy(input_plant_sim)
+    previous_sum = 0
+    current_sum = plant_sim.calculate_plant_pot_sum()
+    delta_queue = deque([])
+    for _ in range(step_cap):
+        plant_sim.conduct_step()
+        temp_sum = plant_sim.calculate_plant_pot_sum()
+        previous_sum = current_sum
+        current_sum = temp_sum
+        delta = current_sum - previous_sum
+        # Break if the delta matches the previous three, indicating stability
+        if len([val for val in delta_queue if val == delta]) == 3:
+            break
+        delta_queue.append(delta)
+        if len(delta_queue) > 3:
+            delta_queue.popleft()
+    return current_sum + delta_queue[0] * (step_cap - plant_sim.get_steps())
