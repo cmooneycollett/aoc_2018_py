@@ -79,11 +79,29 @@ def solve_part1(input_data):
         carts = new_carts
 
 
-def solve_part2(_input_data):
+def solve_part2(input_data):
     """
-    Solves AOC 2018 Day 13 Part 2 // ###
+    Solves AOC 2018 Day 13 Part 2 // Determines the location of the last mine
+    cart remaining at the end of the first tick where it is the last remaining
+    mine cart.
     """
-    return NotImplemented
+    (track_map, carts) = deepcopy(input_data)
+    carts = {cart.loc: cart for cart in carts}
+    while True:
+        # Conduct step
+        new_carts = {}
+        sorted_locs = sorted(carts.keys(), key= lambda loc: (loc.y, loc.x))
+        for loc in sorted_locs:
+            cart = carts[loc]
+            new_cart = update_cart_details(track_map, cart)
+            if new_cart.loc in new_carts:
+                del new_carts[new_cart.loc]
+            else:
+                new_carts[new_cart.loc] = new_cart
+        if len(new_carts) == 1:
+            loc = list(new_carts.keys())[0]
+            return f"{loc.x},{loc.y}"
+        carts = new_carts
 
 
 def update_cart_details(track_map, cart):
