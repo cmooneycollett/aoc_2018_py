@@ -10,9 +10,9 @@ from src.utils.cartography import CardinalDirection, Location2D
 @dataclass
 class Cart:
     """
-    Represents a single mine cart characterised by its location and direction.
+    Represents a single mine cart characterised by its direction and number of
+    intersection turns conducted.
     """
-    loc: Location2D
     direction: CardinalDirection
     turns: int
 
@@ -25,28 +25,25 @@ def process_input_file(filepath="./input/day13.txt"):
     """
     with open(filepath, encoding="utf-8") as file:
         track_map = {}
-        carts = []
+        carts = {}
         y = 0
         for line in file.readlines():
             x = 0
             for char in line:
+                loc = Location2D(x, y)
                 match char:
                     case "<":
-                        carts.append(
-                            Cart(Location2D(x, y), CardinalDirection.WEST, 0))
-                        track_map[Location2D(x, y)] = "~"
+                        carts[loc] = Cart(CardinalDirection.WEST, 0)
+                        track_map[Location2D(x, y)] = "-"
                     case ">":
-                        carts.append(
-                            Cart(Location2D(x, y), CardinalDirection.EAST, 0))
-                        track_map[Location2D(x, y)] = "~"
+                        carts[loc] = Cart(CardinalDirection.EAST, 0)
+                        track_map[Location2D(x, y)] = "-"
                     case "^":
-                        carts.append(
-                            Cart(Location2D(x, y), CardinalDirection.NORTH, 0))
-                        track_map[Location2D(x, y)] = "~"
+                        carts[loc] = Cart(CardinalDirection.NORTH, 0)
+                        track_map[Location2D(x, y)] = "|"
                     case "v":
-                        carts.append(
-                            Cart(Location2D(x, y), CardinalDirection.SOUTH, 0))
-                        track_map[Location2D(x, y)] = "~"
+                        carts[loc] = Cart(CardinalDirection.SOUTH, 0)
+                        track_map[Location2D(x, y)] = "|"
                     case " " | "\n" | "\r":
                         pass
                     case _:
@@ -64,18 +61,10 @@ def solve_part1(input_data):
     """
     (track_map, carts) = deepcopy(input_data)
     while True:
-        # Conduct step for each cart
-        new_carts = []
-        for cart in carts:
-            new_carts.append(update_cart_details(track_map, cart))
-        # Check for crashes
-        cart_locs = set()
-        for cart in new_carts:
-            # Check for the location of the first crash
-            if cart.loc in cart_locs:
-                return f"{cart.loc.x},{cart.loc.y}"
-            cart_locs.add(cart.loc)
-        # Update the carts list
+        (new_carts, crash_sites) = conduct_tick(
+            track_map, carts, stop_on_first_crash=True)
+        if len(crash_sites) == 1:
+            return f"{crash_sites[0].x},{crash_sites[0].y}"
         carts = new_carts
 
 
@@ -86,31 +75,21 @@ def solve_part2(input_data):
     mine cart.
     """
     (track_map, carts) = deepcopy(input_data)
-    carts = {cart.loc: cart for cart in carts}
     while True:
-        # Conduct step
-        new_carts = {}
-        sorted_locs = sorted(carts.keys(), key= lambda loc: (loc.y, loc.x))
-        for loc in sorted_locs:
-            cart = carts[loc]
-            new_cart = update_cart_details(track_map, cart)
-            if new_cart.loc in new_carts:
-                del new_carts[new_cart.loc]
-            else:
-                new_carts[new_cart.loc] = new_cart
+        (new_carts, _) = conduct_tick(track_map, carts, stop_on_first_crash=False)
         if len(new_carts) == 1:
             loc = list(new_carts.keys())[0]
             return f"{loc.x},{loc.y}"
         carts = new_carts
 
 
-def update_cart_details(track_map, cart):
+def update_cart_details(track_map, loc, cart):
     """
-    Determines the new location and direction for the cart. Returns a new Cart
-    object with the updated values.
+    Determines the new location and direction for the cart. Returns a tuple
+    containing the new location, and Cart object with updated direction.
     """
     # Adjust direction of cart
-    loc = cart.loc
+    new_loc = loc
     direction = cart.direction
     turns = cart.turns
     match track_map[loc]:
@@ -144,11 +123,50 @@ def update_cart_details(track_map, cart):
     # Update location of cart
     match direction:
         case CardinalDirection.NORTH:
-            loc = Location2D(loc.x, loc.y - 1)
+            new_loc = Location2D(loc.x, loc.y - 1)
         case CardinalDirection.EAST:
-            loc = Location2D(loc.x + 1, loc.y)
+            new_loc = Location2D(loc.x + 1, loc.y)
         case CardinalDirection.SOUTH:
-            loc = Location2D(loc.x, loc.y + 1)
+            new_loc = Location2D(loc.x, loc.y + 1)
         case CardinalDirection.WEST:
-            loc = Location2D(loc.x - 1, loc.y)
-    return Cart(loc, direction, turns)
+            new_loc = Location2D(loc.x - 1, loc.y)
+    return (new_loc, Cart(direction, turns))
+
+
+def conduct_tick(track_map, carts, stop_on_first_crash=True):
+    """
+    Conducts a single tick of the mine cart simulation. Returns the updated mine
+    cart dict and the list of observed crash locations.
+    """
+    old_carts = deepcopy(carts)
+    new_carts = {}
+    crash_sites = set()
+    sorted_locs = sorted(old_carts.keys(), key=lambda loc: (loc.y, loc.x))
+    for old_loc in sorted_locs:
+        crashed = False
+        # Skip over old carts that have already been crashed into
+        if old_loc in crash_sites:
+            continue
+        old_cart = old_carts[old_loc]
+        # Remove from old carts to prevent spurious crashes
+        del old_carts[old_loc]
+        # Get updated cart location, direction and turns
+        (new_loc, new_cart) = update_cart_details(track_map, old_loc, old_cart)
+        # Check if new cart has crashed into another cart
+        if new_loc in new_carts:
+            crashed = True
+            del new_carts[new_loc]
+            crash_sites.add(new_loc)
+        elif new_loc in old_carts:
+            crashed = True
+            del old_carts[new_loc]
+            crash_sites.add(new_loc)
+        # Check if early stop condition has been met
+        if crashed and stop_on_first_crash:
+            break
+        # Don't add crashed cart to the new carts
+        if crashed and not stop_on_first_crash:
+            continue
+        # Add the updated cart to the new carts record
+        new_carts[new_loc] = new_cart
+    return (new_carts, list(crash_sites))
